@@ -1,7 +1,7 @@
 agent: 
-  type: naive            # Type of agent to use (e.g., 'naive', 'cot', etc.)
-  remember_cot: True     # Whether the agent should remember its reasoning across turns
-  max_text_history: 16   # Maximum number of text messages to keep in the history
+  type: robust_cot            # Type of agent to use (e.g., 'naive', 'cot', etc.)
+  remember_cot: False     # Whether the agent should remember its reasoning across turns
+  max_text_history: 100   # Maximum number of text messages to keep in the history
   max_image_history: 0   # Maximum number of images to keep in the history
   max_cot_history: 1     # Maximum number of chain-of-thought steps to keep in history (if using 'cot' type of agent)
   max_icl_history: 1000   # Maximum number of ICL steps to keep in history (if using 'few_shot' type of agent)
@@ -10,7 +10,7 @@ agent:
 eval:
   output_dir: "results"  # Directory where evaluation results will be saved
   resume_from: null      # Path to to the incomplete results file to resume an incomplete run
-  num_workers: 16        # Number of parallel workers. Increase for faster evaluation if you have enough resources
+  num_workers: 2000       # Number of parallel workers. Increase for faster evaluation if you have enough resources
   num_episodes:          # Minimum number of episodes to run for each environment. You can optionally increase this to get more reliable results
     nle: 5               # Number of episodes for the 'nle' environment
     minihack: 5          # Number of episodes for each 'minihack' task
@@ -26,19 +26,24 @@ eval:
   feedback_on_invalid_action : True       # Whether to provide feedback on invalid actions
 
 client:
-  client_name: openai           # LLM client to use (e.g., 'openai', 'gemini', 'claude')
-  model_id: gpt-4o              # Model identifier (e.g., 'gpt-4', 'gpt-3.5-turbo')
-  base_url: http://localhost:8080/v1   # Base URL for the API (if using a local server)
+  # client_name: openai           # LLM client to use (e.g., 'openai', 'gemini', 'claude')
+  client_name: vllm           # LLM client to use (e.g., 'openai', 'gemini', 'claude')
+  # model_id: Qwen/Qwen3-235B-A22B-fp8-tput              # Model identifier (e.g., 'gpt-4', 'gpt-3.5-turbo')
+  # model_id: "qwen1.5-fine-tuned"              # Model identifier (e.g., 'gpt-4', 'gpt-3.5-turbo')
+  # model_id: "Qwen/Qwen2.5-1.5B-Instruct"              # Model identifier (e.g., 'gpt-4', 'gpt-3.5-turbo')
+  model_id: "/new_data/aldo/balrog_hack/hf_format/samples_22528.0/"              # Model identifier (e.g., 'gpt-4', 'gpt-3.5-turbo')
+  base_url: http://localhost:8000/v1   # Base URL for the API (if using a local server)
+# base_url: https://api.together.xyz/v1   # Base URL for the API (if using a local server)
   generate_kwargs:
     temperature: 1.0            # Sampling temperature. If null the API default temperature is used instead
-    max_tokens: 4096            # Max tokens to generate in the response
-  timeout: 60                   # Timeout for API requests in seconds
-  max_retries: 5                # Max number of retries for failed API calls
+    max_tokens: 24000            # Max tokens to generate in the response
+  timeout: 320                  # Timeout for API requests in seconds
+  max_retries: 10                # Max number of retries for failed API calls
   delay: 2                      # Exponential backoff factor between retries in seconds
-  alternate_roles: False        # Whether the client requires alternating between the agent and the environment
+  alternate_roles: False       aeo # Whether the client requires alternating between the agent and the environment
 
 envs:
-  names: babyai-babaisai-textworld-crafter-nle-minihack   # Environments to evaluate, separated by hyphens
+  names: textworld   # Environments to evaluate, separated by hyphens
   env_kwargs:
     seed: null                # Random seed; null means a random seed is used
   nle_kwargs:
@@ -105,7 +110,7 @@ tasks:
   textworld_tasks:
     - "treasure_hunter"
     - "the_cooking_game"
-    - "coin_collector"
+    # - "coin_collector"
 
   babaisai_tasks:
     - "env/make_win-distr_obj_rule"

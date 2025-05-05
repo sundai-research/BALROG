@@ -286,7 +286,7 @@ class Evaluator:
         # Open the CSV file and write the header
         with open(csv_filename, mode="w", newline="", encoding="utf-8") as csv_file:
             csv_writer = csv.writer(csv_file, escapechar="˘", quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow(["Step", "Action", "Reasoning", "Observation", "Reward", "Done"])
+            csv_writer.writerow(["Step", "messages", "model_response", "Action", "Reasoning", "Observation", "Reward", "Done"])
 
             # If the agent is an FewShotAgent, load the in-context learning episode
             if isinstance(agent, FewShotAgent):
@@ -306,7 +306,7 @@ class Evaluator:
 
             action = None
             for step in range(max_steps_per_episode):
-                response = agent.act(obs, prev_action=action)
+                response, model_response, messages = agent.act(obs, prev_action=action)
                 action = env.check_action_validity(response.completion)
                 reasoning = response.reasoning if hasattr(response, "reasoning") else ""
 
@@ -331,6 +331,8 @@ class Evaluator:
                 csv_writer.writerow(
                     [
                         step,
+                        messages,
+                        model_response,
                         action,
                         reasoning,
                         obs["text"]["long_term_context"],

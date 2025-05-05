@@ -126,9 +126,56 @@ You always have to output one of the above actions at a time and no other text. 
         """.strip()
 
         if messages and messages[-1].role == "user":
-            messages[-1].content += "\n\n" + naive_instruction
+            messages[-1].content += "\n\n" + naive_instruction + " /no_think" # Added /no_think based on context
+
+        # --- Debug Logging Start ---
+        import os
+        from pathlib import Path
+
+        # Define the log file path
+        log_file_path = Path.home() / "Downloads" / "debug.log"
+        # Ensure the Downloads directory exists, create if not
+        log_file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Open the file in append mode to log messages sent
+        with open(log_file_path, 'a') as f:
+            f.write("--- Messages Being Sent to LLM ---\n")
+            for i, msg in enumerate(messages):
+                f.write(f"Message {i+1}:\n")
+                f.write(f"  Role: {msg.role}\n")
+                # Write content without ANSI codes, indenting multiline content
+                content_lines = str(msg.content).split('\n')
+                formatted_content = '\n'.join([f"    {line}" for line in content_lines])
+                f.write(f"  Content:\n{formatted_content}\n")
+                if hasattr(msg, 'attachment') and msg.attachment is not None:
+                    # Indicate presence of attachment without printing raw data
+                    f.write("  Attachment: [Image Data Present]\n")
+                f.write("----------------------------------\n")
+        # --- Debug Logging End ---
 
         response = self.client.generate(messages)
+
+        # --- Debug Logging Start ---
+        # Open the file in append mode to log the LLM response
+        with open(log_file_path, 'a') as f:
+            f.write("--- LLM Response Received ---\n")
+            f.write(f"  Model ID: {response.model_id}\n")
+            # Format completion similar to message content
+            completion_lines = str(response.completion).split('\n')
+            formatted_completion = '\n'.join([f"    {line}" for line in completion_lines])
+            f.write(f"  Completion:\n{formatted_completion}\n")
+            f.write(f"  Stop Reason: {response.stop_reason}\n")
+            f.write(f"  Input Tokens: {response.input_tokens}\n")
+            f.write(f"  Output Tokens: {response.output_tokens}\n")
+            # Format reasoning if present and not None
+            if response.reasoning is not None:
+                reasoning_lines = str(response.reasoning).split('\n')
+                formatted_reasoning = '\n'.join([f"    {line}" for line in reasoning_lines])
+                f.write(f"  Reasoning:\n{formatted_reasoning}\n")
+            else:
+                f.write("  Reasoning: None\n")
+            f.write("----------------------------------\n")
+        # --- Debug Logging End ---
 
         final_answer = self._extract_final_answer(response)
 

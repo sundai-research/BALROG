@@ -153,7 +153,7 @@ class OpenAIWrapper(LLMClientWrapper):
                 self.client = OpenAI(base_url=self.base_url)
             elif self.client_name.lower() == "openai":
                 # For OpenAI, always use the standard API regardless of base_url
-                self.client = OpenAI()
+                self.client = OpenAI(api_key=os.environ["TOGETHER_API_KEY"], base_url=self.base_url)
             self._initialized = True
 
     def convert_messages(self, messages):
